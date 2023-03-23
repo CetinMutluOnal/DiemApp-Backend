@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mongodb:
+    container_name: diem-db
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    ports: 
+    - 27019:27017
+
+  mongo-seed:
+    container_name: diem-db-seed
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    links:
+      - mongodb
+    volumes:
+      - ./dump/diemSocial:/seed-data/diemSocial
+    command: "mongorestore --host mongodb /seed-data/"
