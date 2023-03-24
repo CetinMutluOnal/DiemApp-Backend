@@ -5,8 +5,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schema/user.schema';
 import { UserService } from './user/user.service';
 import { UserController } from './user/user.controller';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 @Module({
   imports: [
+    NestjsFormDataModule,
     MongooseModule.forRoot('mongodb://localhost:27019', {
       dbName: 'diemSocial',
     }),
