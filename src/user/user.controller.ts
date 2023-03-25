@@ -24,7 +24,8 @@ export class UserController {
     try {
       const newUser = await this.userService.createUser(createuserDto);
       return response.status(HttpStatus.CREATED).json({
-        message: 'User has been created successfully', newUser,
+        message: 'User has been created successfully',
+        newUser,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -39,9 +40,13 @@ export class UserController {
   async updateUser(
     @Res() response,
     @Param('id') userId: string,
-    @Body() updateUserDto: UpdateUserDto){
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     try {
-      const existingUser = await this.userService.updateUser(userId, updateUserDto);
+      const existingUser = await this.userService.updateUser(
+        userId,
+        updateUserDto,
+      );
 
       return response.status(HttpStatus.OK).json({
         message: 'User has been successfully Updated',
@@ -57,7 +62,8 @@ export class UserController {
     try {
       const userData = await this.userService.getAllUser();
       return response.status(HttpStatus.OK).json({
-        message: 'All Users data found successfully', userData,
+        message: 'All Users data found successfully',
+        userData,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -65,11 +71,11 @@ export class UserController {
   }
 
   @Get('/:id')
-  async getUser(@Res() response, @Param('id') UserId: string) {
+  async getUserByID(@Res() response, @Param('id') UserId: string) {
     try {
-      const existingUser = await this.userService.getUser(UserId);
+      const existingUser = await this.userService.getUserById(UserId);
       return response.status(HttpStatus.OK).json({
-        message: 'Book found successfully',
+        message: 'User found successfully',
         existingUser,
       });
     } catch (error) {
@@ -78,7 +84,7 @@ export class UserController {
   }
 
   @Delete('/:id')
-  async deleteUser(@Res() response, @Param('id') userId: string){
+  async deleteUser(@Res() response, @Param('id') userId: string) {
     try {
       const deletedUser = await this.userService.deleteUser(userId);
       return response.status(HttpStatus.OK).json({
