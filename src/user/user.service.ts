@@ -7,10 +7,16 @@ import { IUser } from 'src/interface/user.interface';
 import { NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
 import { AuthUserDto } from 'src/dto/user-dto/auth-user-dto';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt/dist';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel('User') private userModel: Model<IUser>) {}
+  constructor(
+    @InjectModel('User') private userModel: Model<IUser>,
+    private config: ConfigService,
+    private jwt: JwtService,
+  ) {}
 
   async createUser(createUserdto: CreateUserDto): Promise<IUser> {
     const newUser = await new this.userModel(createUserdto);
@@ -19,9 +25,11 @@ export class UserService {
   }
 
   async signIn(authUserDto: AuthUserDto) {
-    const signedUser = await this.userModel.findOne({
-      email: authUserDto.email,
-    });
+    const signedUser = await this.userModel
+      .findOne({
+        email: authUserDto.email,
+      })
+      .exec();
     if (!signedUser) {
       throw new ForbiddenException('Email incorrect');
     }
@@ -33,7 +41,27 @@ export class UserService {
     if (!pwMatch) {
       throw new ForbiddenException('Wrong Password!');
     }
-    return signedUser;
+    return this.signToken(signedUser.id, signedUser.email);
+  }
+
+  async signToken(
+    userId: string,
+    email: string,
+  ): Promise<{ access_token: string }> {
+    const payload = {
+      sub: userId,
+      email,
+    };
+    const secret = this.config.get('JWT_SECRET');
+
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    });
+
+    return {
+      access_token: token,
+    };
   }
 
   async updateUser(
