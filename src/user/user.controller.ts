@@ -41,7 +41,7 @@ export class UserController {
   @FormDataRequest()
   async signIn(@Res() response, @Body() authUserDto: AuthUserDto) {
     try {
-      const signedUser = await this.userService.singIn(authUserDto);
+      const signedUser = await this.userService.signIn(authUserDto);
       return response.status(HttpStatus.CREATED).json({
         message: 'signed in successfully',
       });
