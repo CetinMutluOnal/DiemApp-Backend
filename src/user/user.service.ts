@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from 'src/dto/user-dto/create-user.dto';
@@ -6,6 +6,7 @@ import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
 import { IUser } from 'src/interface/user.interface';
 import { NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
+import { AuthUserDto } from 'src/dto/user-dto/auth-user-dto';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,24 @@ export class UserService {
     const newUser = await new this.userModel(createUserdto);
     newUser.password = await argon.hash(newUser.password);
     return newUser.save();
+  }
+
+  async signIn(authUserDto: AuthUserDto) {
+    const signedUser = await this.userModel.findOne({
+      email: authUserDto.email,
+    });
+    if (!signedUser) {
+      throw new ForbiddenException('Email incorrect');
+    }
+    const pwMatch = await argon.verify(
+      signedUser.password,
+      authUserDto.password,
+    );
+
+    if (!pwMatch) {
+      throw new ForbiddenException('Wrong Password!');
+    }
+    return signedUser;
   }
 
   async updateUser(
