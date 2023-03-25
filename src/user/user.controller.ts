@@ -43,11 +43,11 @@ export class UserController {
     try {
       const signedUser = await this.userService.signIn(authUserDto);
       return response.status(HttpStatus.CREATED).json({
-        message: 'signed in successfully',
+        token: signedUser.access_token,
       });
     } catch (error) {
       response.status(HttpStatus.FORBIDDEN).json({
-        message: 'Incorrect Credentials',
+        message: error.message,
       });
     }
   }
