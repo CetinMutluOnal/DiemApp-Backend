@@ -12,10 +12,12 @@ Diem is a concept social media web application like Twitter. Backend by [Nest](h
 ```bash
 $ npm install
 ```
+##Listening Port
+App listens on http://localhost:3000/
 
 ## Running the app
-
 ```bash
+
 # development
 $ npm run start
 
