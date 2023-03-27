@@ -6,7 +6,7 @@ import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
 import { IUser } from 'src/interface/user.interface';
 import { NotFoundException } from '@nestjs/common';
 import * as argon from 'argon2';
-import { AuthUserDto } from 'src/dto/user-dto/auth-user-dto';
+import { AuthUserDto } from 'src/dto/user-dto/auth-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt/dist';
 

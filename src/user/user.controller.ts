@@ -13,7 +13,7 @@ import { CreateUserDto } from 'src/dto/user-dto/create-user.dto';
 import { UserService } from './user.service';
 import { FormDataRequest } from 'nestjs-form-data/dist/decorators';
 import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
-import { AuthUserDto } from 'src/dto/user-dto/auth-user-dto';
+import { AuthUserDto } from 'src/dto/user-dto/auth-user.dto';
 
 @Controller('user')
 export class UserController {
