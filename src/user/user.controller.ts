@@ -52,7 +52,7 @@ export class UserController {
     }
   }
 
-  @Put(':/id')
+  @Put('/:id')
   async updateUser(
     @Res() response,
     @Param('id') userId: string,
@@ -95,7 +95,7 @@ export class UserController {
         existingUser,
       });
     } catch (error) {
-      response.status(error.status).json(error.status);
+      return response.status(error.status).json(error.status);
     }
   }
 
