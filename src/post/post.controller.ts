@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Param,
   HttpStatus,
@@ -11,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { FormDataRequest } from 'nestjs-form-data';
 import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
-import { UpdatePostDto } from 'src/dto/post-dto/update-post.dto';
 import { PostService } from './post.service';
 
 @Controller('post')
