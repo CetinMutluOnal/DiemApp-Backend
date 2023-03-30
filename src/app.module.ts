@@ -3,19 +3,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schema/user.schema';
-import { UserService } from './user/user.service';
-import { UserController } from './user/user.controller';
 import { NestjsFormDataModule } from 'nestjs-form-data';
-import { ConfigModule } from '@nestjs/config/dist';
-import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { PostService } from './post/post.service';
 import { PostController } from './post/post.controller';
 import { PostSchema } from './schema/post.schema';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 @Module({
   imports: [
     NestjsFormDataModule,
-    JwtModule.register({}),
-    ConfigModule.forRoot({}),
     MongooseModule.forRoot('mongodb://localhost:27019', {
       dbName: 'diemSocial',
     }),
@@ -23,8 +19,10 @@ import { PostSchema } from './schema/post.schema';
       { name: 'User', schema: UserSchema },
       { name: 'Post', schema: PostSchema },
     ]),
+    AuthModule,
+    UserModule,
   ],
-  controllers: [AppController, UserController, PostController],
-  providers: [AppService, UserService, PostService],
+  controllers: [AppController, PostController],
+  providers: [AppService, PostService],
 })
 export class AppModule {}
