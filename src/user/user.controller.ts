@@ -13,7 +13,7 @@ import { CreateUserDto } from 'src/dto/user-dto/create-user.dto';
 import { UserService } from './user.service';
 import { FormDataRequest } from 'nestjs-form-data/dist/decorators';
 import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
-import { AuthUserDto } from 'src/dto/user-dto/auth-user.dto';
+import { AuthUserDto } from 'src/dto/auth-dto/auth-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -33,21 +33,6 @@ export class UserController {
         statusCode: 400,
         message: 'Error: User not created!',
         error: 'Bad Request',
-      });
-    }
-  }
-
-  @Post('/login')
-  @FormDataRequest()
-  async signIn(@Res() response, @Body() authUserDto: AuthUserDto) {
-    try {
-      const signedUser = await this.userService.signIn(authUserDto);
-      return response.status(HttpStatus.CREATED).json({
-        token: signedUser.access_token,
-      });
-    } catch (error) {
-      response.status(HttpStatus.FORBIDDEN).json({
-        message: error.message,
       });
     }
   }
