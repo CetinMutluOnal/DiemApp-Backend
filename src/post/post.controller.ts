@@ -64,7 +64,7 @@ export class PostController {
         deletedPost,
       });
     } catch (error) {
-      return response.status(error.status).jsons(error.status);
+      return response.status(error.status).json(error.status);
     }
   }
 }
