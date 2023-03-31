@@ -2,7 +2,7 @@ import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
-  userId: string;
+  readonly userId: string;
 
   @IsString()
   @IsNotEmpty()
