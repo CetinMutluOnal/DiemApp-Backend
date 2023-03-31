@@ -7,19 +7,31 @@ import {
   Param,
   HttpStatus,
   Res,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { FormDataRequest } from 'nestjs-form-data';
 import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
 import { PostService } from './post.service';
+import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+import { Public } from 'src/auth/auth.guard';
 
 @Controller('post')
 export class PostController {
   constructor(private postService: PostService) {}
+  @UseGuards(JwtAuthGuard)
+  @Public()
   @Post()
   @FormDataRequest()
-  async createPost(@Res() response, @Body() createPostDto: CreatePostDto) {
+  async createPost(
+    @Res() response,
+    @Body() createPostDto: CreatePostDto,
+    @Request() req,
+  ) {
     try {
-      const newPost = await this.postService.createPost(createPostDto);
+      const userId = req.user.userId;
+      const updatedDto = { ...createPostDto, userId };
+      const newPost = await this.postService.createPost(updatedDto);
       return response.status(HttpStatus.CREATED).json({
         message: 'Post created successfully',
         newPost,
@@ -52,7 +64,7 @@ export class PostController {
         post,
       });
     } catch (error) {
-      return response.status(error.status).jsons(error.status);
+      return response.status(error.status).json(error.status);
     }
   }
   @Delete('/:id')
