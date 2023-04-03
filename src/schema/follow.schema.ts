@@ -1,7 +1,7 @@
 import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-@Schema({ timestamps: true })
+@Schema()
 export class Follow {
   @Prop({ type: Types.ObjectId, required: true })
   followerId: Types.ObjectId;
