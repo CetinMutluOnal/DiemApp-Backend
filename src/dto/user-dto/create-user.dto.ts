@@ -20,4 +20,7 @@ export class CreateUserDto {
 
   @IsString()
   readonly avatar: string | undefined;
+
+  @IsString()
+  readonly refreshToken: string;
 }

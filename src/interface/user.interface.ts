@@ -5,5 +5,6 @@ export interface IUser extends Document {
   readonly userName: string;
   readonly email: string;
   password: string;
+  refreshToken: string;
   avatar: string | undefined;
 }
