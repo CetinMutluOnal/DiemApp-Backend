@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from 'src/dto/user-dto/create-user.dto';
-import { UpdateUserDto } from 'src/dto/user-dto/update-user.dto';
+import { CreateUserDto, UpdateUserDto } from 'src/dto/';
 import { IUser } from 'src/interface/user.interface';
 import { NotFoundException } from '@nestjs/common';
-import * as argon from 'argon2';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel('User') private userModel: Model<IUser>) {}
 
   async createUser(createUserdto: CreateUserDto): Promise<IUser> {
-    const newUser = await new this.userModel(createUserdto);
-    newUser.password = await argon.hash(newUser.password);
+    const newUser = new this.userModel(createUserdto);
     return newUser.save();
   }
 

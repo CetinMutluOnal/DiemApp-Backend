@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,14 +12,38 @@ import { IUser } from 'src/interface/user.interface';
 import * as argon from 'argon2';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt/dist';
+import { UserService } from 'src/user/user.service';
+import { CreateUserDto } from 'src/dto/user-dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel('User') private userModel: Model<IUser>,
     private jwt: JwtService,
+    private userService: UserService,
     private config: ConfigService,
   ) {}
+
+  async signUp(createUserDto: CreateUserDto): Promise<any> {
+    const userExists = await this.userModel.findOne({
+      email: createUserDto.email,
+    });
+    if (userExists) {
+      throw new BadRequestException('User Already Exists');
+    }
+    const hash = await argon.hash(createUserDto.password);
+    const newUser = await this.userService.createUser({
+      ...createUserDto,
+      password: hash,
+    });
+    const tokens = await this.signToken(newUser.id, newUser.email);
+    await this.updateRefreshToken(newUser.id, tokens.refresh_token);
+    return tokens;
+  }
+
+  async logout(userId: string) {
+    return this.userService.updateUser(userId, { refreshToken: null });
+  }
 
   async signIn(authUserDto: AuthUserDto): Promise<any> {
     const user = await this.userModel.findOne({ email: authUserDto.email });
@@ -28,26 +54,56 @@ export class AuthService {
     if (!pwMatch) {
       throw new UnauthorizedException('Wrong Password');
     }
-    return this.signToken(user._id, user.email);
+    const tokens = await this.signToken(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
+  }
+
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await argon.hash(refreshToken);
+    this.userService.updateUser(userId, { refreshToken: hashedRefreshToken });
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user || !user.refreshToken)
+      throw new ForbiddenException('Access Not Denied');
+    const refreshTokenMatches = await argon.verify(
+      user.refreshToken,
+      refreshToken,
+    );
+    if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+    const tokens = await this.signToken(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
   }
 
   async signToken(
     userId: string,
     email: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+  }> {
     const payload = {
       sub: userId,
       email,
     };
-    const secret = this.config.get('JWT_SECRET');
 
-    const token = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
-      secret: secret,
-    });
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwt.signAsync(payload, {
+        expiresIn: '15m',
+        secret: this.config.get('JWT_ACCESS_SECRET'),
+      }),
+      this.jwt.signAsync(payload, {
+        expiresIn: '7d',
+        secret: this.config.get('JWT_REFRESH_SECRET'),
+      }),
+    ]);
 
     return {
-      access_token: token,
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 }

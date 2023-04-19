@@ -11,15 +11,14 @@ import {
   Request,
 } from '@nestjs/common';
 import { FormDataRequest } from 'nestjs-form-data';
-import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
+import { CreatePostDto } from 'src/dto/';
 import { PostService } from './post.service';
-import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
-import { Public } from 'src/auth/auth.guard';
+import { AccessTokenGuard, Public } from 'src/common/guards/';
 
 @Controller('post')
 export class PostController {
   constructor(private postService: PostService) {}
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Public()
   @Post()
   @FormDataRequest()

@@ -9,15 +9,35 @@ import {
   UseGuards,
   HttpCode,
 } from '@nestjs/common';
-import { AuthUserDto } from 'src/dto/auth-dto/auth-user.dto';
+import { AuthUserDto } from 'src/dto';
 import { FormDataRequest } from 'nestjs-form-data';
-import { Public } from './auth.guard';
+import { Public } from '../common/guards/auth.guard';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt.auth.guard';
+import { AccessTokenGuard, RefreshTokenGuard } from '../common/guards/';
+import { CreateUserDto } from 'src/dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+  @Public()
+  @Post('signup')
+  @FormDataRequest()
+  async signUp(@Res() response, @Body() createuserDto: CreateUserDto) {
+    try {
+      const newUser = await this.authService.signUp(createuserDto);
+      return response.status(HttpStatus.CREATED).json({
+        message: 'User has been created successfully',
+        newUser,
+      });
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 400,
+        message: 'Error: User not created!',
+        error: 'Bad Request',
+      });
+    }
+  }
+
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -27,6 +47,7 @@ export class AuthController {
       const signedUser = await this.authService.signIn(authUserDto);
       return response.status(HttpStatus.OK).json({
         access_token: signedUser.access_token,
+        refresh_token: signedUser.refresh_token,
       });
     } catch (error) {
       response.status(HttpStatus.FORBIDDEN).json({
@@ -35,7 +56,42 @@ export class AuthController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RefreshTokenGuard)
+  @Get('refresh')
+  async refreshToken(@Request() req, @Res() response) {
+    try {
+      const tokens = await this.authService.refreshTokens(
+        req.user.sub,
+        req.user.refreshToken,
+      );
+      return response.status(HttpStatus.OK).json({
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+      });
+    } catch (error) {
+      response.status(HttpStatus.FORBIDDEN).json({
+        message: error.message,
+      });
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('logout')
+  async logout(@Request() req, @Res() response) {
+    try {
+      await this.authService.logout(req.user.userId);
+      return response.status(HttpStatus.OK).json({
+        message: 'User Logged Out Successfully',
+      });
+    } catch (error) {
+      return response.status(HttpStatus.FORBIDDEN).json({
+        message: error.message,
+      });
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
