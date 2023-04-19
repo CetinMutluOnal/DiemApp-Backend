@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from 'src/schema/user.schema';
 import { JwtModule } from '@nestjs/jwt/dist';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { JwtAccessStrategy, JwtRefreshStrategy } from './strategy';
 import { PassportModule } from '@nestjs/passport';

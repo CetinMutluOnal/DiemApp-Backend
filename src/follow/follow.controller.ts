@@ -11,15 +11,14 @@ import {
   Param,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
-import { FollowDto } from 'src/dto/follow-dto/follow-dto';
-import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
-import { Public } from 'src/auth/auth.guard';
+import { FollowDto } from 'src/dto/';
+import { AccessTokenGuard } from 'src/common/guards/';
 
 @Controller('follow')
 export class FollowController {
   constructor(private followService: FollowService) {}
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   async createFollow(
     @Request() req,
     @Res() response,
@@ -70,7 +69,7 @@ export class FollowController {
   }
 
   @Delete('/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   async deleteFollow(
     @Res() response,
     @Request() req,
@@ -91,7 +90,7 @@ export class FollowController {
   }
 
   @Delete('/follower/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   async deleteFollower(
     @Res() response,
     @Request() req,
