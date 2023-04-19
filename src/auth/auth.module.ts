@@ -7,7 +7,7 @@ import { UserSchema } from 'src/schema/user.schema';
 import { JwtModule } from '@nestjs/jwt/dist';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NestjsFormDataModule } from 'nestjs-form-data';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtAccessStrategy, JwtRefreshStrategy } from './strategy';
 import { PassportModule } from '@nestjs/passport';
 
 @Module({
@@ -16,18 +16,19 @@ import { PassportModule } from '@nestjs/passport';
     UserModule,
     PassportModule,
     NestjsFormDataModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET'),
-        signOptions: { expiresIn: '60s' },
-      }),
-      inject: [ConfigService],
-    }),
+    JwtModule.register({}),
+    // JwtModule.registerAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: async (config: ConfigService) => ({
+    //     secret: config.get('JWT_ACCESS_SECRET'),
+    //     signOptions: { expiresIn: '60s' },
+    //   }),
+    //   inject: [ConfigService],
+    // }),
     ConfigModule.forRoot({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtAccessStrategy, JwtRefreshStrategy],
   /* { provide: APP_GUARD, useClass: AuthGuard }],*/
 })
 export class AuthModule {}
