@@ -13,13 +13,12 @@ import {
 import { FormDataRequest } from 'nestjs-form-data';
 import { CreatePostDto } from 'src/dto/';
 import { PostService } from './post.service';
-import { AccessTokenGuard, Public } from 'src/common/guards/';
+import { AccessTokenGuard } from 'src/common/guards/';
 
 @Controller('post')
 export class PostController {
   constructor(private postService: PostService) {}
   @UseGuards(AccessTokenGuard)
-  @Public()
   @Post()
   @FormDataRequest()
   async createPost(
@@ -52,6 +51,24 @@ export class PostController {
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
+    }
+  }
+  @UseGuards(AccessTokenGuard)
+  @Get('follows')
+  async getUserFollowsPosts(@Request() req, @Res() response) {
+    try {
+      const followedUserPost = await this.postService.getUserFollowsPosts(
+        req.user.userId,
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Post found Successfully',
+        followedUserPost,
+      });
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        message: 'Posts Not Found',
+        error: error.message,
+      });
     }
   }
   @Get('/:id')
