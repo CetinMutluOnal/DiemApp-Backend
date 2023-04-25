@@ -6,3 +6,4 @@ export * from './user-dto/create-user.dto';
 export * from './user-dto/update-user.dto';
 export * from './message-dto/create-message.dto';
 export * from './message-dto/find-message.dto';
+export * from './like-dto/like.dto';
