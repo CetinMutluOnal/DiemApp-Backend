@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { PostModule } from './post/post.module';
 import { FollowModule } from './follow/follow.module';
 import { MessageModule } from './message/message.module';
+import { LikeModule } from './like/like.module';
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27019', {
@@ -15,6 +16,7 @@ import { MessageModule } from './message/message.module';
     PostModule,
     FollowModule,
     MessageModule,
+    LikeModule,
   ],
   controllers: [],
   providers: [],
