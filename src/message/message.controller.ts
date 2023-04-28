@@ -9,26 +9,49 @@ import {
   Res,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { CreateMessageDto, FindMessageDto } from 'src/dto';
 import { MessageService } from './message.service';
 import { FormDataRequest } from 'nestjs-form-data';
 import { AccessTokenGuard } from 'src/common/guards';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import path = require('path');
 
 @Controller('message')
 export class MessageController {
   constructor(private messageService: MessageService) {}
   @UseGuards(AccessTokenGuard)
   @Post()
-  @FormDataRequest()
+  // @FormDataRequest()
+  @UseInterceptors(
+    FileInterceptor('media', {
+      storage: diskStorage({
+        destination: './images/avatar',
+        filename: (req, file, cb) => {
+          const fileName: string =
+            path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
+          const extension: string = path.parse(file.originalname).ext;
+          cb(null, `${fileName}${extension}`);
+        },
+      }),
+    }),
+  )
   async sendMessage(
     @Res() response,
     @Request() req,
+    @UploadedFile() file,
     @Body() createMessageDto: CreateMessageDto,
   ) {
     try {
-      const userId = await req.user.userId;
-      const sendMessageDto = { senderId: userId, ...createMessageDto };
+      const sendMessageDto = {
+        ...createMessageDto,
+        senderId: req.user.userId,
+        media: file.path,
+      };
       const sendMessage = await this.messageService.createMessage(
         sendMessageDto,
       );

@@ -9,11 +9,17 @@ import {
   Request,
   Res,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { AccessTokenGuard } from 'src/common/guards';
 import { CreateCommentDto } from 'src/dto';
 import { FormDataRequest } from 'nestjs-form-data';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import path = require('path');
 
 @Controller('comment')
 export class CommentController {
@@ -21,17 +27,34 @@ export class CommentController {
 
   @UseGuards(AccessTokenGuard)
   @Post('/:id')
-  @FormDataRequest()
+  // @FormDataRequest()
+  @UseInterceptors(
+    FileInterceptor('media', {
+      storage: diskStorage({
+        destination: './images/avatar',
+        filename: (req, file, cb) => {
+          const fileName: string =
+            path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
+          const extension: string = path.parse(file.originalname).ext;
+          cb(null, `${fileName}${extension}`);
+        },
+      }),
+    }),
+  )
   async createComment(
     @Request() req,
     @Res() response,
+    @UploadedFile() file,
     @Param('id') postId: string,
     @Body() createCommentDto: CreateCommentDto,
   ) {
     try {
-      const userId = req.user.userId;
-      const finalCommentDto = { ...createCommentDto, userId, postId };
-      const comment = await this.commentService.createComment(finalCommentDto);
+      const comment = await this.commentService.createComment({
+        ...createCommentDto,
+        userId: req.user.userId,
+        media: file.path,
+      });
+
       return response.status(HttpStatus.CREATED).json({
         message: 'Comment created successfully',
         comment,
