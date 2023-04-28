@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/';
@@ -51,5 +51,15 @@ export class UserService {
       throw new NotFoundException(`User #${userId} not found`);
     }
     return deletedUser;
+  }
+
+  async setAvatar(userId: string, avatarUrl: string): Promise<IUser> {
+    await this.userModel.findByIdAndUpdate(userId, { avatar: avatarUrl });
+    const updatedUser = await this.userModel.findById(userId);
+
+    if (updatedUser.avatar != avatarUrl) {
+      throw new BadRequestException('Avatar Could not updated');
+    }
+    return updatedUser;
   }
 }
