@@ -9,27 +9,49 @@ import {
   Res,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { FormDataRequest } from 'nestjs-form-data';
 import { CreatePostDto } from 'src/dto/';
 import { PostService } from './post.service';
 import { AccessTokenGuard } from 'src/common/guards/';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import path = require('path');
 
 @Controller('post')
 export class PostController {
   constructor(private postService: PostService) {}
   @UseGuards(AccessTokenGuard)
   @Post()
-  @FormDataRequest()
+  // @FormDataRequest()
+  @UseInterceptors(
+    FileInterceptor('media', {
+      storage: diskStorage({
+        destination: './images/avatar',
+        filename: (req, file, cb) => {
+          const fileName: string =
+            path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
+          const extension: string = path.parse(file.originalname).ext;
+          cb(null, `${fileName}${extension}`);
+        },
+      }),
+    }),
+  )
   async createPost(
     @Res() response,
+    @UploadedFile() file,
     @Body() createPostDto: CreatePostDto,
     @Request() req,
   ) {
     try {
-      const userId = req.user.userId;
-      const updatedDto = { ...createPostDto, userId };
-      const newPost = await this.postService.createPost(updatedDto);
+      const newPost = await this.postService.createPost({
+        ...createPostDto,
+        userId: req.user.userId,
+        media: file.path,
+      });
       return response.status(HttpStatus.CREATED).json({
         message: 'Post created successfully',
         newPost,
