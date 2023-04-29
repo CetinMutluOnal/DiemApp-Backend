@@ -17,18 +17,9 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule,
     NestjsFormDataModule,
     JwtModule.register({}),
-    // JwtModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: async (config: ConfigService) => ({
-    //     secret: config.get('JWT_ACCESS_SECRET'),
-    //     signOptions: { expiresIn: '60s' },
-    //   }),
-    //   inject: [ConfigService],
-    // }),
     ConfigModule.forRoot({}),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAccessStrategy, JwtRefreshStrategy],
-  /* { provide: APP_GUARD, useClass: AuthGuard }],*/
 })
 export class AuthModule {}
