@@ -29,7 +29,7 @@ export class PostService {
 
   async getPostsByUserId(userId: string): Promise<IPost[]> {
     const allPost = await this.postModel
-      .find({ userId: userId })
+      .find({ userId: userId, deletedAt: null })
       .sort({ createdAt: 'desc' });
     return allPost;
   }
@@ -60,8 +60,11 @@ export class PostService {
   }
 
   async deletePost(postId: string): Promise<IPost> {
-    const deletedPost = await this.postModel.findByIdAndDelete(postId).exec();
-    if (!deletedPost) {
+    await this.postModel.findByIdAndUpdate(postId, { deletedAt: new Date() });
+
+    const deletedPost = await this.postModel.findById(postId);
+
+    if (deletedPost.deletedAt == null) {
       throw new NotFoundException('Post could not deleted');
     }
     return deletedPost;
