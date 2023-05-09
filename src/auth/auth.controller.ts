@@ -91,8 +91,8 @@ export class AuthController {
         req.user.refreshToken,
       );
       return response.status(HttpStatus.OK).json({
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
       });
     } catch (error) {
       response.status(HttpStatus.FORBIDDEN).json({
