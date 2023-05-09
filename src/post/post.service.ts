@@ -1,15 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
 import { FollowService } from 'src/follow/follow.service';
 import { IPost } from 'src/interface/post.interface';
+import { IUser } from 'src/interface/user.interface';
+import { UserService } from 'src/user/user.service';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectModel('Post') private postModel: Model<IPost>,
     private followService: FollowService,
+    private userService: UserService,
   ) {}
 
   async createPost(createPostDto: CreatePostDto) {
@@ -34,12 +38,12 @@ export class PostService {
     return allPost;
   }
 
-  async getUserFollowsPosts(followerId: string): Promise<object[]> {
+  async getUserFollowsPosts(followerId: string): Promise<IPost[]> {
     const follows = await this.followService.getAllFollows(followerId);
     if (!follows) {
       throw new NotFoundException('User has no follows');
     }
-    const followPosts: object[] = [];
+    const followPosts: IPost[] = [];
     for (const user of follows) {
       const posts = await this.getPostsByUserId(user.followingId.toString());
       posts.forEach((post) => {
@@ -57,6 +61,31 @@ export class PostService {
       throw new NotFoundException('Post Not Found');
     }
     return post;
+  }
+
+  async createPostFeed(followerId: string): Promise<object> {
+    const posts: IPost[] = await this.getUserFollowsPosts(followerId);
+    const feed: object[] = [];
+
+    for (const post of posts) {
+      const user = await this.userService.getUserById(post.userId.toString());
+      feed.push({
+        author: {
+          id: post.userId,
+          name: user.name,
+          username: user.username,
+          avatar: user.avatar,
+        },
+        post: {
+          id: post._id,
+          content: post.content,
+          media: post.media,
+          createdAt: post.createdAt,
+          deletedAt: post.deletedAt,
+        },
+      });
+    }
+    return feed;
   }
 
   async deletePost(postId: string): Promise<IPost> {

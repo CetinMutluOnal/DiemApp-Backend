@@ -79,7 +79,7 @@ export class PostController {
   @Get('follows')
   async getUserFollowsPosts(@Request() req, @Res() response) {
     try {
-      const followedUserPost = await this.postService.getUserFollowsPosts(
+      const followedUserPost = await this.postService.createPostFeed(
         req.user.userId,
       );
       return response.status(HttpStatus.OK).json({
