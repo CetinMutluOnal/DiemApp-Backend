@@ -68,7 +68,7 @@ export class UserController {
   @UseGuards(AccessTokenGuard)
   @Post('/:id/avatar')
   @UseInterceptors(
-    FileInterceptor('file', {
+    FileInterceptor('avatar', {
       storage: diskStorage({
         destination: './images/avatar',
         filename: (req, file, cb) => {
