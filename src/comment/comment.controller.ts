@@ -31,7 +31,7 @@ export class CommentController {
   @UseInterceptors(
     FileInterceptor('media', {
       storage: diskStorage({
-        destination: './images/avatar',
+        destination: './images/comment',
         filename: (req, file, cb) => {
           const fileName: string =
             path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
