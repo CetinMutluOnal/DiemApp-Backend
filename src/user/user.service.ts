@@ -45,6 +45,14 @@ export class UserService {
     return user;
   }
 
+  async getUserByUsername(username: string): Promise<IUser> {
+    const user = await this.userModel.findOne({ username: username });
+    if (!user) {
+      throw new NotFoundException(`User #${username} not found`);
+    }
+    return user;
+  }
+
   async deleteUser(userId: string): Promise<IUser> {
     const deletedUser = await this.userModel.findByIdAndDelete(userId);
     if (!deletedUser) {

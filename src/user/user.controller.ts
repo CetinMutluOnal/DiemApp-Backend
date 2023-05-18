@@ -117,10 +117,25 @@ export class UserController {
     }
   }
 
-  @Get('/:id')
+  @Get('/id/:id')
   async getUserByID(@Res() response, @Param('id') UserId: string) {
     try {
       const existingUser = await this.userService.getUserById(UserId);
+      return response.status(HttpStatus.OK).json({
+        message: 'User found successfully',
+        existingUser,
+      });
+    } catch (error) {
+      return response.status(error.status).json(error.status);
+    }
+  }
+  @Get(':username')
+  async getUserByUsername(
+    @Res() response,
+    @Param('username') username: string,
+  ) {
+    try {
+      const existingUser = await this.userService.getUserByUsername(username);
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
         existingUser,
