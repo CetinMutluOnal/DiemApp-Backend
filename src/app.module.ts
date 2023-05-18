@@ -9,6 +9,8 @@ import { LikeModule } from './like/like.module';
 import { CommentModule } from './comment/comment.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { SocketModule } from './socket/socket.module';
+import { FeedModule } from './feed/feed.module';
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27019', {
@@ -24,6 +26,8 @@ import { join } from 'path';
     MessageModule,
     LikeModule,
     CommentModule,
+    SocketModule,
+    FeedModule,
   ],
   controllers: [],
   providers: [],
