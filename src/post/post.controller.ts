@@ -50,7 +50,7 @@ export class PostController {
       const newPost = await this.postService.createPost({
         ...createPostDto,
         userId: req.user.userId,
-        media: file.path,
+        media: file?.path,
       });
       return response.status(HttpStatus.CREATED).json({
         message: 'Post created successfully',
