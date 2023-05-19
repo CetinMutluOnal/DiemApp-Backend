@@ -4,9 +4,7 @@ import { Model, Types } from 'mongoose';
 import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
 import { FollowService } from 'src/follow/follow.service';
 import { IPost } from 'src/interface/post.interface';
-import { IUser } from 'src/interface/user.interface';
 import { UserService } from 'src/user/user.service';
-import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class PostService {
@@ -31,21 +29,21 @@ export class PostService {
     return allPost;
   }
 
-  async getPostsByUserId(userId: string): Promise<IPost[]> {
+  async getPostsByUserId(userId: Types.ObjectId): Promise<IPost[]> {
     const allPost = await this.postModel
       .find({ userId: userId, deletedAt: null })
       .sort({ createdAt: 'desc' });
     return allPost;
   }
 
-  async getUserFollowsPosts(followerId: string): Promise<IPost[]> {
+  async getUserFollowsPosts(followerId: Types.ObjectId): Promise<IPost[]> {
     const follows = await this.followService.getAllFollows(followerId);
     if (!follows) {
       throw new NotFoundException('User has no follows');
     }
     const followPosts: IPost[] = [];
     for (const user of follows) {
-      const posts = await this.getPostsByUserId(user.followingId.toString());
+      const posts = await this.getPostsByUserId(user.followingId);
       posts.forEach((post) => {
         followPosts.push(post);
       });
@@ -55,7 +53,7 @@ export class PostService {
     }
     return followPosts.sort().reverse();
   }
-  async getPostById(postId: string): Promise<IPost> {
+  async getPostById(postId: Types.ObjectId): Promise<IPost> {
     const post = await this.postModel.findById(postId);
     if (!post) {
       throw new NotFoundException('Post Not Found');
@@ -63,12 +61,12 @@ export class PostService {
     return post;
   }
 
-  async createPostFeed(followerId: string): Promise<object> {
+  async createPostFeed(followerId: Types.ObjectId): Promise<object> {
     const posts: IPost[] = await this.getUserFollowsPosts(followerId);
     const feed: object[] = [];
 
     for (const post of posts) {
-      const user = await this.userService.getUserById(post.userId.toString());
+      const user = await this.userService.getUserById(post.userId);
       feed.push({
         author: {
           id: post.userId,
@@ -88,7 +86,38 @@ export class PostService {
     return feed;
   }
 
-  async deletePost(postId: string): Promise<IPost> {
+  async getPostDetails(postId: Types.ObjectId): Promise<object> {
+    const post = await this.postModel.aggregate([
+      {
+        $match: {
+          _id: new Types.ObjectId(`${postId}`),
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'comments',
+        },
+      },
+    ]);
+
+    if (!post) {
+      throw new NotFoundException('Post Not Found');
+    }
+    return post;
+  }
+
+  async deletePost(postId: Types.ObjectId): Promise<IPost> {
     await this.postModel.findByIdAndUpdate(postId, { deletedAt: new Date() });
 
     const deletedPost = await this.postModel.findById(postId);

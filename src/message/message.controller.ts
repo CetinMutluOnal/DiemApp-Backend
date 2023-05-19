@@ -20,6 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path = require('path');
+import { Types } from 'mongoose';
 
 @Controller('message')
 export class MessageController {
@@ -75,15 +76,17 @@ export class MessageController {
     @Body() findMessageDto: FindMessageDto,
   ) {
     try {
-      const newMessageDto = { senderId: req.user.userId, ...findMessageDto };
-      const messages = await this.messageService.getAllMessages(newMessageDto);
+      const messages = await this.messageService.getAllMessages({
+        senderId: new Types.ObjectId(req.user.userId),
+        ...findMessageDto,
+      });
       return response.status(HttpStatus.OK).json({
-        message: `All Message from ${findMessageDto.senderId} to ${findMessageDto.senderId} found successfully`,
+        message: `All Message from ${findMessageDto.senderId} to ${findMessageDto.receiverId} found successfully`,
         messages,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
-        message: `Messages from ${findMessageDto.senderId} to ${findMessageDto.senderId} could not found`,
+        message: `Messages from ${findMessageDto.senderId} to ${findMessageDto.receiverId} could not found`,
         error: error.message,
       });
     }
@@ -120,7 +123,9 @@ export class MessageController {
     @Param('id') messageId: string,
   ) {
     try {
-      const msg = await this.messageService.getMessageById(messageId);
+      const msg = await this.messageService.getMessageById(
+        new Types.ObjectId(messageId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Message found successfully',
         msg,
@@ -142,8 +147,8 @@ export class MessageController {
   ) {
     try {
       const deletedMessage = await this.messageService.deleteMessage(
-        messageId,
-        req.user.userId,
+        new Types.ObjectId(messageId),
+        new Types.ObjectId(req.user.userId),
       );
       return response.status(HttpStatus.OK).json({
         message: 'Message deleted successfully',

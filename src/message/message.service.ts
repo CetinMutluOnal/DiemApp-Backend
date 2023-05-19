@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateMessageDto, FindMessageDto } from 'src/dto/';
 import { IMessage } from 'src/interface/message.interface';
 import { Date } from 'mongoose';
@@ -31,7 +31,7 @@ export class MessageService {
     return allMessages;
   }
 
-  async getMessageById(messageId: string): Promise<IMessage> {
+  async getMessageById(messageId: Types.ObjectId): Promise<IMessage> {
     const message = await this.messageModel.findById(messageId);
 
     if (!message) {
@@ -41,11 +41,11 @@ export class MessageService {
   }
 
   async deleteMessage(
-    messageId: string,
-    tokenOwner: string,
+    messageId: Types.ObjectId,
+    tokenOwner: Types.ObjectId,
   ): Promise<IMessage> {
     const message = await this.messageModel.findById(messageId);
-    const senderId = message.senderId.toString();
+    const senderId = message.senderId;
     if (senderId === tokenOwner) {
       const deletedMessage = await this.messageModel.findByIdAndUpdate(
         messageId,

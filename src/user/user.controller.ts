@@ -21,6 +21,7 @@ import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path = require('path');
 import { AccessTokenGuard } from 'src/common/guards';
+import { Types } from 'mongoose';
 
 @Controller('user')
 export class UserController {
@@ -52,7 +53,7 @@ export class UserController {
   ) {
     try {
       const existingUser = await this.userService.updateUser(
-        userId,
+        new Types.ObjectId(userId),
         updateUserDto,
       );
 
@@ -89,7 +90,7 @@ export class UserController {
   ) {
     try {
       const setAvatar = await this.userService.setAvatar(
-        req.user.userId,
+        new Types.ObjectId(req.user.userId),
         file.path,
       );
       return response.status(HttpStatus.OK).json({
@@ -120,7 +121,9 @@ export class UserController {
   @Get('/id/:id')
   async getUserByID(@Res() response, @Param('id') UserId: string) {
     try {
-      const existingUser = await this.userService.getUserById(UserId);
+      const existingUser = await this.userService.getUserById(
+        new Types.ObjectId(UserId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
         existingUser,
@@ -135,7 +138,9 @@ export class UserController {
     @Param('username') username: string,
   ) {
     try {
-      const existingUser = await this.userService.getUserByUsername(username);
+      const existingUser = await this.userService.getUserByUsername(
+        new Types.ObjectId(username),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
         existingUser,
@@ -148,7 +153,9 @@ export class UserController {
   @Delete('/:id')
   async deleteUser(@Res() response, @Param('id') userId: string) {
     try {
-      const deletedUser = await this.userService.deleteUser(userId);
+      const deletedUser = await this.userService.deleteUser(
+        new Types.ObjectId(userId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'User deleted successsfuly',
         deletedUser,

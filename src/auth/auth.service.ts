@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { AuthUserDto } from 'src/dto/auth-dto/auth-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { IUser } from 'src/interface/user.interface';
@@ -41,7 +41,7 @@ export class AuthService {
     return tokens;
   }
 
-  async logout(userId: string) {
+  async logout(userId: Types.ObjectId) {
     return this.userService.updateUser(userId, { refreshToken: null });
   }
 
@@ -59,12 +59,12 @@ export class AuthService {
     return tokens;
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string) {
+  async updateRefreshToken(userId: Types.ObjectId, refreshToken: string) {
     const hashedRefreshToken = await argon.hash(refreshToken);
     this.userService.updateUser(userId, { refreshToken: hashedRefreshToken });
   }
 
-  async refreshTokens(userId: string, refreshToken: string) {
+  async refreshTokens(userId: Types.ObjectId, refreshToken: string) {
     const user = await this.userModel.findById(userId);
     if (!user || !user.refreshToken)
       throw new ForbiddenException('Access Not Denied');
@@ -79,7 +79,7 @@ export class AuthService {
   }
 
   async signToken(
-    userId: string,
+    userId: Types.ObjectId,
     email: string,
   ): Promise<{
     access_token: string;

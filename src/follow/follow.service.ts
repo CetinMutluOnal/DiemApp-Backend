@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { FollowDto } from 'src/dto/follow-dto/follow-dto';
 import { IFollow } from 'src/interface/follow.interface';
 
@@ -13,7 +13,7 @@ export class FollowService {
     return follow.save();
   }
 
-  async getAllFollows(followerId: string): Promise<IFollow[]> {
+  async getAllFollows(followerId: Types.ObjectId): Promise<IFollow[]> {
     const follows = await this.followModel.find({ followerId: followerId });
     if (!follows || follows.length == 0) {
       throw new NotFoundException('Follows Not Found');
@@ -21,7 +21,7 @@ export class FollowService {
     return follows;
   }
 
-  async getAllFollowers(followingId: string): Promise<IFollow[]> {
+  async getAllFollowers(followingId: Types.ObjectId): Promise<IFollow[]> {
     const follows = await this.followModel.find({ followingId: followingId });
     if (!follows || follows.length == 0) {
       throw new NotFoundException('Follows Not Found');
@@ -29,7 +29,7 @@ export class FollowService {
     return follows;
   }
 
-  async deleteFollow(followerId: string, followingId: string) {
+  async deleteFollow(followerId: Types.ObjectId, followingId: Types.ObjectId) {
     const follow = await this.followModel.findOneAndDelete({
       followerId: followerId,
       followingId: followingId,
@@ -41,7 +41,10 @@ export class FollowService {
     return follow;
   }
 
-  async deleteFollower(followerId: string, followingId: string) {
+  async deleteFollower(
+    followerId: Types.ObjectId,
+    followingId: Types.ObjectId,
+  ) {
     const follow = await this.followModel.findOneAndDelete({
       followerId: followerId,
       followingId: followingId,

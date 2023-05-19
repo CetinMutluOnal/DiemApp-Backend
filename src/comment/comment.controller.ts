@@ -15,7 +15,7 @@ import {
 import { CommentService } from './comment.service';
 import { AccessTokenGuard } from 'src/common/guards';
 import { CreateCommentDto } from 'src/dto';
-import { FormDataRequest } from 'nestjs-form-data';
+import { Types } from 'mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,8 +51,9 @@ export class CommentController {
     try {
       const comment = await this.commentService.createComment({
         ...createCommentDto,
-        userId: req.user.userId,
+        userId: new Types.ObjectId(req.user.userId),
         media: file.path,
+        postId: new Types.ObjectId(postId),
       });
 
       return response.status(HttpStatus.CREATED).json({
@@ -71,7 +72,9 @@ export class CommentController {
   @Get('/post/:id')
   async getPostAllComments(@Res() response, @Param('id') postId: string) {
     try {
-      const comments = await this.commentService.getPostAllComments(postId);
+      const comments = await this.commentService.getPostAllComments(
+        new Types.ObjectId(postId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Comments found successfully',
         comments,
@@ -84,7 +87,9 @@ export class CommentController {
   @Get('/user/:id')
   async getUserAllComments(@Res() response, @Param('id') userId: string) {
     try {
-      const comments = await this.commentService.getUserAllComments(userId);
+      const comments = await this.commentService.getUserAllComments(
+        new Types.ObjectId(userId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Comments found successfully',
         comments,
@@ -103,8 +108,8 @@ export class CommentController {
   ) {
     try {
       const deletedComment = await this.commentService.deleteComment(
-        req.user.userId,
-        commentId,
+        new Types.ObjectId(req.user.userId),
+        new Types.ObjectId(commentId),
       );
       return response.status(HttpStatus.OK).json({
         message: 'Comment deleted successfully',

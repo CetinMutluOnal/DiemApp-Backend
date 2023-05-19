@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { LikeDto } from 'src/dto';
 import { ILike } from 'src/interface/like.interface';
 
@@ -13,7 +13,7 @@ export class LikeService {
     return like.save();
   }
 
-  async getAllLikes(userId: string): Promise<ILike[]> {
+  async getAllLikes(userId: Types.ObjectId): Promise<ILike[]> {
     const likes = await this.likeModel.find({ userId: userId });
 
     if (!likes || likes.length == 0) {
@@ -22,7 +22,10 @@ export class LikeService {
     return likes;
   }
 
-  async deleteLike(userId: string, postId: string): Promise<ILike> {
+  async deleteLike(
+    userId: Types.ObjectId,
+    postId: Types.ObjectId,
+  ): Promise<ILike> {
     const deletedLike = await this.likeModel.findOneAndDelete({
       userId: userId,
       postId: postId,

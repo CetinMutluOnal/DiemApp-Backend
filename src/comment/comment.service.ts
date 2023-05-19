@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateCommentDto } from 'src/dto';
 import { IComment } from 'src/interface/comment.interface';
 
@@ -14,8 +14,10 @@ export class CommentService {
     return comment.save();
   }
 
-  async getPostAllComments(postId: string): Promise<IComment[]> {
-    const comments = await this.commentModel.find({ postId: postId });
+  async getPostAllComments(postId: Types.ObjectId): Promise<IComment[]> {
+    const comments = await this.commentModel.find({
+      postId: postId,
+    });
 
     if (!comments || comments.length == 0) {
       throw new NotFoundException('Comments Not Found');
@@ -23,8 +25,10 @@ export class CommentService {
     return comments;
   }
 
-  async getUserAllComments(userId: string): Promise<IComment[]> {
-    const comments = await this.commentModel.find({ userId: userId });
+  async getUserAllComments(userId: Types.ObjectId): Promise<IComment[]> {
+    const comments = await this.commentModel.find({
+      userId: userId,
+    });
 
     if (!comments || comments.length == 0) {
       throw new NotFoundException('Comments Not Found');
@@ -32,7 +36,10 @@ export class CommentService {
     return comments;
   }
 
-  async deleteComment(userId: string, commentId: string): Promise<IComment> {
+  async deleteComment(
+    userId: Types.ObjectId,
+    commentId: Types.ObjectId,
+  ): Promise<IComment> {
     await this.commentModel.findOneAndUpdate(
       {
         userId: userId,

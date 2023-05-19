@@ -13,6 +13,7 @@ import {
 import { FollowService } from './follow.service';
 import { FollowDto } from 'src/dto/';
 import { AccessTokenGuard } from 'src/common/guards/';
+import { Types } from 'mongoose';
 
 @Controller('follow')
 export class FollowController {
@@ -25,7 +26,7 @@ export class FollowController {
     @Body() followDto: FollowDto,
   ) {
     try {
-      const followerId = req.user.userId;
+      const followerId = new Types.ObjectId(req.user.userId);
       const createFollowDto = { ...followDto, followerId };
       const createFollow = await this.followService.createFollow(
         createFollowDto,
@@ -46,7 +47,9 @@ export class FollowController {
   @Get('/:id')
   async getAllFollows(@Res() response, @Param('id') followerId: string) {
     try {
-      const follows = await this.followService.getAllFollows(followerId);
+      const follows = await this.followService.getAllFollows(
+        new Types.ObjectId(followerId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Followings found successfully',
         follows,
@@ -58,7 +61,9 @@ export class FollowController {
   @Get('/followers/:id')
   async getAllFollowers(@Res() response, @Param('id') followingId: string) {
     try {
-      const follows = await this.followService.getAllFollowers(followingId);
+      const follows = await this.followService.getAllFollowers(
+        new Types.ObjectId(followingId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Followings found successfully',
         follows,
@@ -77,8 +82,8 @@ export class FollowController {
   ) {
     try {
       const follows = await this.followService.deleteFollow(
-        req.user.userId,
-        followingId,
+        new Types.ObjectId(req.user.userId),
+        new Types.ObjectId(followingId),
       );
       return response.status(HttpStatus.OK).json({
         message: 'Unfollowed successfully',
@@ -98,8 +103,8 @@ export class FollowController {
   ) {
     try {
       const follows = await this.followService.deleteFollower(
-        followingId,
-        req.user.userId,
+        new Types.ObjectId(followingId),
+        new Types.ObjectId(req.user.userId),
       );
       return response.status(HttpStatus.OK).json({
         message: 'Follower removed successfully',

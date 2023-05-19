@@ -13,6 +13,7 @@ import {
 import { LikeService } from './like.service';
 import { AccessTokenGuard } from 'src/common/guards';
 import { LikeDto } from 'src/dto';
+import { Types } from 'mongoose';
 
 @Controller('like')
 export class LikeController {
@@ -22,9 +23,10 @@ export class LikeController {
   @Post()
   async likePost(@Request() req, @Res() response, @Body() likeDto: LikeDto) {
     try {
-      const userId = req.user.userId;
-      const finalLikeDto = { ...likeDto, userId };
-      const like = await this.likeService.createLike(finalLikeDto);
+      const like = await this.likeService.createLike({
+        ...likeDto,
+        userId: new Types.ObjectId(req.user.userId),
+      });
       return response.status(HttpStatus.CREATED).json({
         message: 'Liked Successfully',
         like,
@@ -40,7 +42,9 @@ export class LikeController {
   @Get('/:id')
   async getLikedPosts(@Res() response, @Param('id') userId: string) {
     try {
-      const likes = await this.likeService.getAllLikes(userId);
+      const likes = await this.likeService.getAllLikes(
+        new Types.ObjectId(userId),
+      );
       return response.status(HttpStatus.OK).json({
         message: 'Likes found Successfully',
         likes,
@@ -59,8 +63,8 @@ export class LikeController {
   ) {
     try {
       const deletedLike = await this.likeService.deleteLike(
-        req.user.userId,
-        postId,
+        new Types.ObjectId(req.user.userId),
+        new Types.ObjectId(postId),
       );
       return response.status(HttpStatus.OK).json({
         message: 'Like deleted successfully',

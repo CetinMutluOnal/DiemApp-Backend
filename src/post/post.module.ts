@@ -6,9 +6,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PostSchema } from 'src/schema/post.schema';
 import { FollowModule } from 'src/follow/follow.module';
 import { UserModule } from 'src/user/user.module';
+import { UserSchema } from 'src/schema/user.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Post', schema: PostSchema }]),
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     NestjsFormDataModule,
     FollowModule,
     UserModule,

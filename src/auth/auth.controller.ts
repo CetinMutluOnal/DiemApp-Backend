@@ -21,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path = require('path');
+import { Types } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
@@ -87,7 +88,7 @@ export class AuthController {
   async refreshToken(@Request() req, @Res() response) {
     try {
       const tokens = await this.authService.refreshTokens(
-        req.user.sub,
+        new Types.ObjectId(req.user.sub),
         req.user.refreshToken,
       );
       return response.status(HttpStatus.OK).json({
@@ -106,7 +107,7 @@ export class AuthController {
   @Get('logout')
   async logout(@Request() req, @Res() response) {
     try {
-      await this.authService.logout(req.user.userId);
+      await this.authService.logout(new Types.ObjectId(req.user.userId));
       return response.status(HttpStatus.OK).json({
         message: 'User Logged Out Successfully',
       });

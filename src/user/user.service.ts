@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/';
 import { IUser } from 'src/interface/user.interface';
 import { NotFoundException } from '@nestjs/common';
@@ -15,7 +15,7 @@ export class UserService {
   }
 
   async updateUser(
-    userId: string,
+    userId: Types.ObjectId,
     updateUserDto: UpdateUserDto,
   ): Promise<IUser> {
     const existingUser = await this.userModel.findByIdAndUpdate(
@@ -37,7 +37,7 @@ export class UserService {
     return users;
   }
 
-  async getUserById(userId: string): Promise<IUser> {
+  async getUserById(userId: Types.ObjectId): Promise<IUser> {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException(`User #${userId} not found`);
@@ -45,7 +45,7 @@ export class UserService {
     return user;
   }
 
-  async getUserByUsername(username: string): Promise<IUser> {
+  async getUserByUsername(username: Types.ObjectId): Promise<IUser> {
     const user = await this.userModel.findOne({ username: username });
     if (!user) {
       throw new NotFoundException(`User #${username} not found`);
@@ -53,7 +53,7 @@ export class UserService {
     return user;
   }
 
-  async deleteUser(userId: string): Promise<IUser> {
+  async deleteUser(userId: Types.ObjectId): Promise<IUser> {
     const deletedUser = await this.userModel.findByIdAndDelete(userId);
     if (!deletedUser) {
       throw new NotFoundException(`User #${userId} not found`);
@@ -61,7 +61,7 @@ export class UserService {
     return deletedUser;
   }
 
-  async setAvatar(userId: string, avatarUrl: string): Promise<IUser> {
+  async setAvatar(userId: Types.ObjectId, avatarUrl: string): Promise<IUser> {
     await this.userModel.findByIdAndUpdate(userId, { avatar: avatarUrl });
     const updatedUser = await this.userModel.findById(userId);
 
