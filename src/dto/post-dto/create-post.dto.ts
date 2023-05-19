@@ -1,8 +1,9 @@
 import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreatePostDto {
   @IsString()
-  readonly userId: string;
+  readonly userId: Types.ObjectId;
 
   @IsString()
   @IsNotEmpty()

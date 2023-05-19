@@ -1,13 +1,14 @@
 import { IsNotEmpty, IsString, IsDateString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateCommentDto {
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  userId: Types.ObjectId;
 
   @IsNotEmpty()
   @IsString()
-  postId: string;
+  postId: Types.ObjectId;
 
   @IsString()
   @IsNotEmpty()

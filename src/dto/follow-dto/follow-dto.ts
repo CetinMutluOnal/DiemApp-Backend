@@ -1,10 +1,11 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 export class FollowDto {
   @IsNotEmpty()
   @IsString()
-  followerId: string;
+  followerId: Types.ObjectId;
 
   @IsNotEmpty()
   @IsString()
-  followingId: string;
+  followingId: Types.ObjectId;
 }

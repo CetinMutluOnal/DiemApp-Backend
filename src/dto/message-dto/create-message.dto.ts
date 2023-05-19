@@ -1,11 +1,12 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateMessageDto {
   @IsString()
-  readonly senderId: string;
+  readonly senderId: Types.ObjectId;
 
   @IsString()
-  readonly receiverId: string;
+  readonly receiverId: Types.ObjectId;
 
   @IsString()
   @IsNotEmpty()
