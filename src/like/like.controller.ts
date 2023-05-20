@@ -20,11 +20,11 @@ export class LikeController {
   constructor(private likeService: LikeService) {}
 
   @UseGuards(AccessTokenGuard)
-  @Post()
-  async likePost(@Request() req, @Res() response, @Body() likeDto: LikeDto) {
+  @Post('/:id')
+  async likePost(@Request() req, @Res() response, @Param('id') postId: string) {
     try {
       const like = await this.likeService.createLike({
-        ...likeDto,
+        postId: new Types.ObjectId(postId),
         userId: new Types.ObjectId(req.user.userId),
       });
       return response.status(HttpStatus.CREATED).json({

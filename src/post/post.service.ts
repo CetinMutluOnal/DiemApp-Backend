@@ -87,7 +87,7 @@ export class PostService {
   }
 
   async getPostDetails(postId: Types.ObjectId): Promise<object> {
-    const post = await this.postModel.aggregate([
+    const postDetail: any = await this.postModel.aggregate([
       {
         $match: {
           _id: new Types.ObjectId(`${postId}`),
@@ -98,23 +98,53 @@ export class PostService {
           from: 'users',
           localField: 'userId',
           foreignField: '_id',
-          as: 'user',
+          as: 'author',
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'likes',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'likes',
         },
       },
       {
         $lookup: {
-          from: 'comments',
-          localField: '_id',
-          foreignField: 'postId',
-          as: 'comments',
+          from: 'users',
+          localField: 'likes.userId',
+          foreignField: '_id',
+          as: 'likedBy',
+        },
+      },
+
+      {
+        $addFields: {
+          'likes.owner': {
+            $arrayElemAt: ['$likedBy', 0],
+          },
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          likedBy: 0,
+          'author.password': 0,
+          'author.refreshToken': 0,
+          'author.__v': 0,
+          'likes.__v': 0,
+          'likes.owner.password': 0,
+          'likes.owner.refreshToken': 0,
+          'likes.owner.__v': 0,
         },
       },
     ]);
 
-    if (!post) {
+    if (!postDetail) {
       throw new NotFoundException('Post Not Found');
     }
-    return post;
+    return postDetail;
   }
 
   async deletePost(postId: Types.ObjectId): Promise<IPost> {
