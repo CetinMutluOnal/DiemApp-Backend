@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
 import { FollowService } from 'src/follow/follow.service';
+import { IFollow } from 'src/interface/follow.interface';
 import { IPost } from 'src/interface/post.interface';
 import { UserService } from 'src/user/user.service';
 
@@ -10,6 +11,7 @@ import { UserService } from 'src/user/user.service';
 export class PostService {
   constructor(
     @InjectModel('Post') private postModel: Model<IPost>,
+    @InjectModel('Follow') private followModel: Model<IFollow>,
     private followService: FollowService,
     private userService: UserService,
   ) {}
@@ -37,21 +39,52 @@ export class PostService {
   }
 
   async getUserFollowsPosts(followerId: Types.ObjectId): Promise<IPost[]> {
-    const follows = await this.followService.getAllFollows(followerId);
-    if (!follows) {
-      throw new NotFoundException('User has no follows');
-    }
-    const followPosts: IPost[] = [];
-    for (const user of follows) {
-      const posts = await this.getPostsByUserId(user.followingId);
-      posts.forEach((post) => {
-        followPosts.push(post);
-      });
-    }
-    if (!followPosts) {
-      throw new NotFoundException('User Followers has not posted yet.');
-    }
-    return followPosts.sort().reverse();
+    const feed = await this.followModel.aggregate([
+      {
+        $match: {
+          followerId: followerId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'followingId',
+          foreignField: 'userId',
+          as: 'post',
+        },
+      },
+      {
+        $unwind: '$post',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'post.userId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $sort: {
+          'post.createdAt': -1,
+        },
+      },
+
+      {
+        $project: {
+          __v: 0,
+          'post.__v': 0,
+          'user.__v': 0,
+          'user.password': 0,
+          'user.refreshToken': 0,
+        },
+      },
+    ]);
+
+    return feed;
   }
   async getPostById(postId: Types.ObjectId): Promise<IPost> {
     const post = await this.postModel.findById(postId);
@@ -59,31 +92,6 @@ export class PostService {
       throw new NotFoundException('Post Not Found');
     }
     return post;
-  }
-
-  async createPostFeed(followerId: Types.ObjectId): Promise<object> {
-    const posts: IPost[] = await this.getUserFollowsPosts(followerId);
-    const feed: object[] = [];
-
-    for (const post of posts) {
-      const user = await this.userService.getUserById(post.userId);
-      feed.push({
-        author: {
-          id: post.userId,
-          name: user.name,
-          username: user.username,
-          avatar: user.avatar,
-        },
-        post: {
-          id: post._id,
-          content: post.content,
-          media: post.media,
-          createdAt: post.createdAt,
-          deletedAt: post.deletedAt,
-        },
-      });
-    }
-    return feed;
   }
 
   async getPostDetails(postId: Types.ObjectId): Promise<object> {

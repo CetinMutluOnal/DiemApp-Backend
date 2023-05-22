@@ -6,31 +6,28 @@ import {
   Res,
   Request,
   HttpStatus,
-  Body,
   UseGuards,
   Param,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
-import { FollowDto } from 'src/dto/';
 import { AccessTokenGuard } from 'src/common/guards/';
 import { Types } from 'mongoose';
 
 @Controller('follow')
 export class FollowController {
   constructor(private followService: FollowService) {}
-  @Post()
+  @Post('/:id')
   @UseGuards(AccessTokenGuard)
   async createFollow(
     @Request() req,
     @Res() response,
-    @Body() followDto: FollowDto,
+    @Param() followingId: string,
   ) {
     try {
-      const followerId = new Types.ObjectId(req.user.userId);
-      const createFollowDto = { ...followDto, followerId };
-      const createFollow = await this.followService.createFollow(
-        createFollowDto,
-      );
+      const createFollow = await this.followService.createFollow({
+        followerId: new Types.ObjectId(req.user.userId),
+        followingId: new Types.ObjectId(followingId),
+      });
       return response.status(HttpStatus.CREATED).json({
         message: 'Followed Successfully',
         createFollow,

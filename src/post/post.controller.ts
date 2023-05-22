@@ -79,12 +79,12 @@ export class PostController {
   @Get('follows')
   async getUserFollowsPosts(@Request() req, @Res() response) {
     try {
-      const followedUserPost = await this.postService.createPostFeed(
+      const follows = await this.postService.getUserFollowsPosts(
         new Types.ObjectId(req.user.userId),
       );
       return response.status(HttpStatus.OK).json({
         message: 'Post found Successfully',
-        followedUserPost,
+        follows,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
