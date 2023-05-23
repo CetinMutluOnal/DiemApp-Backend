@@ -84,7 +84,7 @@ export class PostController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Post found Successfully',
-        follows,
+        data: follows,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
