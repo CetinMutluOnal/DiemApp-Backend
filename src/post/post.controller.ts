@@ -69,7 +69,7 @@ export class PostController {
       const allPosts = await this.postService.getAllPosts();
       return response.status(HttpStatus.OK).json({
         message: 'All Posts found successfully',
-        allPosts,
+        data: allPosts,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -101,7 +101,22 @@ export class PostController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Post found successfully',
-        post,
+        data: post,
+      });
+    } catch (error) {
+      return response.status(error.status).json(error.status);
+    }
+  }
+
+  @Get('/user/:id')
+  async getPostsByUserId(@Res() response, @Param('id') userId: string) {
+    try {
+      const userPosts = await this.postService.getPostsByUserId(
+        new Types.ObjectId(userId),
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Post found successfully',
+        data: userPosts,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -116,7 +131,7 @@ export class PostController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Post found successfully',
-        post,
+        data: post,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -131,7 +146,7 @@ export class PostController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Post deleted successfully',
-        deletedPost,
+        data: deletedPost,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);

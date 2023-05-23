@@ -30,7 +30,7 @@ export class FollowController {
       });
       return response.status(HttpStatus.CREATED).json({
         message: 'Followed Successfully',
-        createFollow,
+        data: createFollow,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -49,7 +49,7 @@ export class FollowController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Followings found successfully',
-        follows,
+        data: follows,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -63,7 +63,7 @@ export class FollowController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Followings found successfully',
-        follows,
+        data: follows,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -84,7 +84,7 @@ export class FollowController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Unfollowed successfully',
-        follows,
+        data: follows,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -105,7 +105,7 @@ export class FollowController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Follower removed successfully',
-        follows,
+        data: follows,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);

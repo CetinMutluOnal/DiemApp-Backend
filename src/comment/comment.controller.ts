@@ -58,7 +58,7 @@ export class CommentController {
 
       return response.status(HttpStatus.CREATED).json({
         message: 'Comment created successfully',
-        comment,
+        data: comment,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -77,7 +77,7 @@ export class CommentController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Comments found successfully',
-        comments,
+        data: comments,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -92,7 +92,7 @@ export class CommentController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Comments found successfully',
-        comments,
+        data: comments,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -113,7 +113,7 @@ export class CommentController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Comment deleted successfully',
-        deletedComment,
+        data: deletedComment,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);

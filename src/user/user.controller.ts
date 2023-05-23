@@ -34,7 +34,7 @@ export class UserController {
       const newUser = await this.userService.createUser(createuserDto);
       return response.status(HttpStatus.CREATED).json({
         message: 'User has been created successfully',
-        newUser,
+        data: newUser,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -59,7 +59,7 @@ export class UserController {
 
       return response.status(HttpStatus.OK).json({
         message: 'User has been successfully Updated',
-        existingUser,
+        data: existingUser,
       });
     } catch (error) {
       return response.status(error.status).json(error.response);
@@ -95,7 +95,7 @@ export class UserController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Avatar Updated Successfully',
-        setAvatar,
+        data: setAvatar,
       });
     } catch (error) {
       return response.status(error.status).json({
@@ -126,7 +126,7 @@ export class UserController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
-        existingUser,
+        data: existingUser,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -138,12 +138,10 @@ export class UserController {
     @Param('username') username: string,
   ) {
     try {
-      const existingUser = await this.userService.getUserByUsername(
-        new Types.ObjectId(username),
-      );
+      const existingUser = await this.userService.getUserByUsername(username);
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
-        existingUser,
+        data: existingUser,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -158,7 +156,7 @@ export class UserController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'User deleted successsfuly',
-        deletedUser,
+        data: deletedUser,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
