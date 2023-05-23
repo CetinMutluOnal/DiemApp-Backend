@@ -45,8 +45,22 @@ export class UserService {
     return user;
   }
 
-  async getUserByUsername(username: Types.ObjectId): Promise<IUser> {
-    const user = await this.userModel.findOne({ username: username });
+  async getUserByUsername(username: string): Promise<any> {
+    const user = await this.userModel.aggregate([
+      {
+        $match: {
+          username: username,
+        },
+      },
+
+      {
+        $project: {
+          __v: 0,
+          password: 0,
+          refreshToken: 0,
+        },
+      },
+    ]);
     if (!user) {
       throw new NotFoundException(`User #${username} not found`);
     }

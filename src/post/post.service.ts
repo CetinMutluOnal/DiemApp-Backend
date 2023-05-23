@@ -5,6 +5,7 @@ import { CreatePostDto } from 'src/dto/post-dto/create-post.dto';
 import { FollowService } from 'src/follow/follow.service';
 import { IFollow } from 'src/interface/follow.interface';
 import { IPost } from 'src/interface/post.interface';
+import { IUser } from 'src/interface/user.interface';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class PostService {
   constructor(
     @InjectModel('Post') private postModel: Model<IPost>,
     @InjectModel('Follow') private followModel: Model<IFollow>,
+    @InjectModel('User') private userModel: Model<IUser>,
     private followService: FollowService,
     private userService: UserService,
   ) {}
@@ -32,10 +34,42 @@ export class PostService {
   }
 
   async getPostsByUserId(userId: Types.ObjectId): Promise<IPost[]> {
-    const allPost = await this.postModel
-      .find({ userId: userId, deletedAt: null })
-      .sort({ createdAt: 'desc' });
-    return allPost;
+    const user = await this.postModel.aggregate([
+      {
+        $match: {
+          userId: userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'comments',
+        },
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'likes',
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          'comments.__v': 0,
+          'likes.__v': 0,
+        },
+      },
+    ]);
+    return user;
   }
 
   async getUserFollowsPosts(followerId: Types.ObjectId): Promise<IPost[]> {
@@ -64,6 +98,7 @@ export class PostService {
           as: 'user',
         },
       },
+
       {
         $unwind: '$user',
       },
