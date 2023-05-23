@@ -12,9 +12,8 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { CreateMessageDto, FindMessageDto } from 'src/dto';
+import { CreateMessageDto } from 'src/dto';
 import { MessageService } from './message.service';
-import { FormDataRequest } from 'nestjs-form-data';
 import { AccessTokenGuard } from 'src/common/guards';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -26,12 +25,12 @@ import { Types } from 'mongoose';
 export class MessageController {
   constructor(private messageService: MessageService) {}
   @UseGuards(AccessTokenGuard)
-  @Post()
+  @Post('/:id')
   // @FormDataRequest()
   @UseInterceptors(
     FileInterceptor('media', {
       storage: diskStorage({
-        destination: './images/avatar',
+        destination: './images/message',
         filename: (req, file, cb) => {
           const fileName: string =
             path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
@@ -45,17 +44,16 @@ export class MessageController {
     @Res() response,
     @Request() req,
     @UploadedFile() file,
+    @Param('id') receiverId: string,
     @Body() createMessageDto: CreateMessageDto,
   ) {
     try {
-      const sendMessageDto = {
+      const sendMessage = await this.messageService.createMessage({
+        senderId: new Types.ObjectId(req.user.userId),
+        receiverId: new Types.ObjectId(receiverId),
+        media: file?.path,
         ...createMessageDto,
-        senderId: req.user.userId,
-        media: file.path,
-      };
-      const sendMessage = await this.messageService.createMessage(
-        sendMessageDto,
-      );
+      });
       return response.status(HttpStatus.OK).json({
         message: 'Message Sent Successfully',
         sendMessage,
@@ -69,51 +67,28 @@ export class MessageController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post('find')
+  @Get('find/:id')
   async findAllMessages(
     @Res() response,
     @Request() req,
-    @Body() findMessageDto: FindMessageDto,
+    @Param('id') receiverId: string,
   ) {
     try {
       const messages = await this.messageService.getAllMessages({
         senderId: new Types.ObjectId(req.user.userId),
-        ...findMessageDto,
+        receiverId: new Types.ObjectId(receiverId),
       });
       return response.status(HttpStatus.OK).json({
-        message: `All Message from ${findMessageDto.senderId} to ${findMessageDto.receiverId} found successfully`,
+        message: `All Messages found successfully`,
         messages,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
-        message: `Messages from ${findMessageDto.senderId} to ${findMessageDto.receiverId} could not found`,
+        message: `Messages could not found! `,
         error: error.message,
       });
     }
   }
-
-  //   @UseGuards(AccessTokenGuard)
-  //   @Get(':sender/:receiver')
-  //   async findAllMessages(
-  //     @Res() response,
-  //     @Request() req,
-  //     @Param('sender') senderId: string,
-  //     @Param('receiver') receiverId: string,
-  //   ) {
-  //     try {
-  //       const findMessageDto = { senderId: req.user.userId, receiverId: receiverId };
-  //       const messages = this.messageService.getAllMessages(findMessageDto);
-  //       return response.status(HttpStatus.OK).json({
-  //         message: `All Messages from ${findMessageDto.senderId} to ${findMessageDto.senderId} found successfully`,
-  //         messages,
-  //       });
-  //     } catch (error) {
-  //       return response.status(HttpStatus.BAD_REQUEST).json({
-  //         message: `Messages could not found`,
-  //         error: error.message,
-  //       });
-  //     }
-  //   }
 
   @UseGuards(AccessTokenGuard)
   @Get('/:id')
