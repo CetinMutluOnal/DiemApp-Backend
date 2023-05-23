@@ -56,7 +56,7 @@ export class MessageController {
       });
       return response.status(HttpStatus.OK).json({
         message: 'Message Sent Successfully',
-        sendMessage,
+        data: sendMessage,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -80,7 +80,7 @@ export class MessageController {
       });
       return response.status(HttpStatus.OK).json({
         message: `All Messages found successfully`,
-        messages,
+        data: messages,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -103,7 +103,7 @@ export class MessageController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Message found successfully',
-        msg,
+        data: msg,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -127,7 +127,7 @@ export class MessageController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Message deleted successfully',
-        deletedMessage,
+        data: deletedMessage,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({

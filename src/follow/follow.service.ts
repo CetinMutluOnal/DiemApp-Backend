@@ -14,7 +14,29 @@ export class FollowService {
   }
 
   async getAllFollows(followerId: Types.ObjectId): Promise<IFollow[]> {
-    const follows = await this.followModel.find({ followerId: followerId });
+    const follows = await this.followModel.aggregate([
+      {
+        $match: {
+          followerId: followerId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'followingId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          'user.__v': 0,
+          'user.password': 0,
+          'user.refreshToken': 0,
+        },
+      },
+    ]);
     if (!follows || follows.length == 0) {
       throw new NotFoundException('Follows Not Found');
     }
@@ -22,7 +44,29 @@ export class FollowService {
   }
 
   async getAllFollowers(followingId: Types.ObjectId): Promise<IFollow[]> {
-    const follows = await this.followModel.find({ followingId: followingId });
+    const follows = await this.followModel.aggregate([
+      {
+        $match: {
+          followingId: followingId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'followerId',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          'user.__v': 0,
+          'user.password': 0,
+          'user.refreshToken': 0,
+        },
+      },
+    ]);
     if (!follows || follows.length == 0) {
       throw new NotFoundException('Follows Not Found');
     }

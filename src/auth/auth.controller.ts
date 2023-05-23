@@ -54,7 +54,7 @@ export class AuthController {
       });
       return response.status(HttpStatus.CREATED).json({
         message: 'User has been created successfully',
-        newUser,
+        data: newUser,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({

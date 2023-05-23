@@ -29,7 +29,7 @@ export class LikeController {
       });
       return response.status(HttpStatus.CREATED).json({
         message: 'Liked Successfully',
-        like,
+        data: like,
       });
     } catch (error) {
       return response.status(HttpStatus.BAD_REQUEST).json({
@@ -47,7 +47,7 @@ export class LikeController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Likes found Successfully',
-        likes,
+        data: likes,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
@@ -68,7 +68,7 @@ export class LikeController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'Like deleted successfully',
-        deletedLike,
+        data: deletedLike,
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
