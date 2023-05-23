@@ -50,7 +50,7 @@ export class AuthController {
     try {
       const newUser = await this.authService.signUp({
         ...createUserDto,
-        avatar: file.path,
+        avatar: file?.path,
       });
       return response.status(HttpStatus.CREATED).json({
         message: 'User has been created successfully',
