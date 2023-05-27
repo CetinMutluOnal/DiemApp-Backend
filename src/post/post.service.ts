@@ -98,6 +98,22 @@ export class PostService {
           as: 'user',
         },
       },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: 'post._id',
+          foreignField: 'postId',
+          as: 'post.comments',
+        },
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: 'post._id',
+          foreignField: 'postId',
+          as: 'post.likes',
+        },
+      },
 
       {
         $unwind: '$user',
@@ -113,6 +129,8 @@ export class PostService {
           __v: 0,
           'post.__v': 0,
           'user.__v': 0,
+          'post.comments.__v': 0,
+          'post.likes.__v': 0,
           'user.password': 0,
           'user.refreshToken': 0,
         },
