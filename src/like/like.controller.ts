@@ -40,9 +40,9 @@ export class LikeController {
   }
 
   @Get('/:id')
-  async getLikedPosts(@Res() response, @Param('id') userId: string) {
+  async getUserLikes(@Res() response, @Param('id') userId: string) {
     try {
-      const likes = await this.likeService.getAllLikes(
+      const likes = await this.likeService.getUserAllLikes(
         new Types.ObjectId(userId),
       );
       return response.status(HttpStatus.OK).json({
@@ -51,6 +51,46 @@ export class LikeController {
       });
     } catch (error) {
       return response.status(error.status).json(error.status);
+    }
+  }
+
+  @Get('/post/:id')
+  async getPostLikes(@Res() response, @Param('id') postId: string) {
+    try {
+      const likes = await this.likeService.getPostAllLikes(
+        new Types.ObjectId(postId),
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Likes found Successfully',
+        data: likes,
+      });
+    } catch (error) {
+      return response.status(error.status).json(error.status);
+    }
+  }
+  @UseGuards(AccessTokenGuard)
+  @Get('/check/:id')
+  async checkLike(
+    @Res() response,
+    @Request() req,
+    @Param('id') postId: string,
+  ) {
+    try {
+      const isLiked = await this.likeService.controlLike(
+        new Types.ObjectId(req.user.userId),
+        new Types.ObjectId(postId),
+      );
+      if (isLiked) {
+        return response.status(HttpStatus.OK).json({
+          message: 'User liked this post',
+          data: isLiked,
+        });
+      }
+    } catch (error) {
+      return response.status(error.status).json({
+        message: 'Like Not Found',
+        error: error.message,
+      });
     }
   }
 
