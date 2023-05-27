@@ -52,7 +52,7 @@ export class CommentController {
       const comment = await this.commentService.createComment({
         ...createCommentDto,
         userId: new Types.ObjectId(req.user.userId),
-        media: file.path,
+        media: file?.path,
         postId: new Types.ObjectId(postId),
       });
 
@@ -66,6 +66,21 @@ export class CommentController {
         message: 'Comment could not created',
         error: error.message,
       });
+    }
+  }
+
+  @Get('/:id')
+  async getCommentById(@Res() response, @Param('id') commentId: string) {
+    try {
+      const comment = await this.commentService.getCommentById(
+        new Types.ObjectId(commentId),
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Comment found successfully',
+        data: comment,
+      });
+    } catch (error) {
+      return response.status(error.status).json(error.status);
     }
   }
 

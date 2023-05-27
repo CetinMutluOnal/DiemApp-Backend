@@ -14,17 +14,6 @@ export class CommentService {
     return comment.save();
   }
 
-  // async getPostAllComments(postId: Types.ObjectId): Promise<IComment[]> {
-  //   const comments = await this.commentModel.find({
-  //     postId: postId,
-  //   });
-
-  //   if (!comments || comments.length == 0) {
-  //     throw new NotFoundException('Comments Not Found');
-  //   }
-  //   return comments;
-  // }
-
   async getPostAllComments(postId: Types.ObjectId): Promise<object> {
     const comments: any = await this.commentModel.aggregate([
       {
@@ -123,6 +112,91 @@ export class CommentService {
       throw new NotFoundException('Comments Not Found');
     }
     return comments;
+  }
+
+  async getCommentById(commentId: Types.ObjectId): Promise<object> {
+    const comment = await this.commentModel.aggregate([
+      {
+        $match: {
+          _id: commentId,
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'replies',
+        },
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: 'replies._id',
+          foreignField: 'postId',
+          as: 'replyLikes',
+        },
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'likes',
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'author',
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'replies.userId',
+          foreignField: '_id',
+          as: 'replyAuthor',
+        },
+      },
+
+      {
+        $addFields: {
+          'replies.likes': {
+            $arrayElemAt: ['$replyLikes', 0],
+          },
+          'replies.author': '$replyAuthor',
+        },
+      },
+
+      {
+        $project: {
+          __v: 0,
+          replyLikes: 0,
+          replyAuthor: 0,
+          'likes.__v': 0,
+          'replies.__v': 0,
+          'replies.likes.__v': 0,
+          'author.__v': 0,
+          'author.password': 0,
+          'author.refreshToken': 0,
+          'replies.author.__v': 0,
+          'replies.author.password': 0,
+          'replies.author.refreshToken': 0,
+        },
+      },
+    ]);
+
+    if (!comment) {
+      throw new NotFoundException('Comment Not Found');
+    }
+
+    return comment;
   }
 
   async deleteComment(
