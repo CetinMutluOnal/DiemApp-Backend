@@ -99,4 +99,18 @@ export class FollowService {
     }
     return follow;
   }
+
+  async controlFollow(
+    followerId: Types.ObjectId,
+    followingId: Types.ObjectId,
+  ): Promise<any> {
+    const isFollowed = await this.followModel.find({
+      followerId: followerId,
+      followingId: followingId,
+    });
+    if (!isFollowed || isFollowed.length == 0) {
+      throw new NotFoundException('Follow Not Found');
+    }
+    return isFollowed;
+  }
 }

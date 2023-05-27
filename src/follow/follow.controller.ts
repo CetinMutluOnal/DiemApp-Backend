@@ -111,4 +111,29 @@ export class FollowController {
       return response.status(error.status).json(error.status);
     }
   }
+  @UseGuards(AccessTokenGuard)
+  @Get('/check/:id')
+  async checkFollow(
+    @Res() response,
+    @Request() req,
+    @Param('id') followingId: string,
+  ) {
+    try {
+      const isFollowed = await this.followService.controlFollow(
+        new Types.ObjectId(req.user.userId),
+        new Types.ObjectId(followingId),
+      );
+      if (isFollowed) {
+        return response.status(HttpStatus.OK).json({
+          message: 'User followed this account',
+          data: isFollowed,
+        });
+      }
+    } catch (error) {
+      return response.status(error.status).json({
+        message: 'Follow Not Found',
+        error: error.message,
+      });
+    }
+  }
 }
