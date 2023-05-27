@@ -13,8 +13,16 @@ export class LikeService {
     return like.save();
   }
 
-  async getAllLikes(userId: Types.ObjectId): Promise<ILike[]> {
+  async getUserAllLikes(userId: Types.ObjectId): Promise<ILike[]> {
     const likes = await this.likeModel.find({ userId: userId });
+
+    if (!likes || likes.length == 0) {
+      throw new NotFoundException('Likes Not Found');
+    }
+    return likes;
+  }
+  async getPostAllLikes(postId: Types.ObjectId): Promise<ILike[]> {
+    const likes = await this.likeModel.find({ postId: postId });
 
     if (!likes || likes.length == 0) {
       throw new NotFoundException('Likes Not Found');
@@ -35,5 +43,19 @@ export class LikeService {
       throw new NotFoundException('Like Not Found');
     }
     return deletedLike;
+  }
+
+  async controlLike(
+    userId: Types.ObjectId,
+    postId: Types.ObjectId,
+  ): Promise<any> {
+    const isLiked = await this.likeModel.find({
+      userId: userId,
+      postId: postId,
+    });
+    if (!isLiked || isLiked.length == 0) {
+      throw new NotFoundException('Like Not Found');
+    }
+    return isLiked;
   }
 }
