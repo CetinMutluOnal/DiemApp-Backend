@@ -67,8 +67,27 @@ export class MessageController {
   }
 
   @UseGuards(AccessTokenGuard)
+  @Get('find')
+  async findUserAllMessages(@Res() response, @Request() req) {
+    try {
+      const messages = await this.messageService.getUsers(
+        new Types.ObjectId(req.user.userId),
+      );
+      return response.status(HttpStatus.OK).json({
+        message: `All Messages of User found successfully`,
+        data: messages,
+      });
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        message: `Messages could not found! `,
+        error: error.message,
+      });
+    }
+  }
+
+  @UseGuards(AccessTokenGuard)
   @Get('find/:id')
-  async findAllMessages(
+  async findAllMessagesToUser(
     @Res() response,
     @Request() req,
     @Param('id') receiverId: string,
