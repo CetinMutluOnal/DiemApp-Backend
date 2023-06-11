@@ -38,7 +38,11 @@ export class UserService {
   }
 
   async getUserById(userId: Types.ObjectId): Promise<IUser> {
-    const user = await this.userModel.findById(userId);
+    const user = await this.userModel
+      .findById(userId)
+      .select('-password')
+      .select('-refreshToken')
+      .select('-__v');
     if (!user) {
       throw new NotFoundException(`User #${userId} not found`);
     }
