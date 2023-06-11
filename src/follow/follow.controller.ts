@@ -136,4 +136,20 @@ export class FollowController {
       });
     }
   }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('/discover/users')
+  async discoverUsers(@Request() req, @Res() response) {
+    try {
+      const follows = await this.followService.discoverUsers(
+        new Types.ObjectId(req.user.userId),
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Followings found successfully',
+        data: follows,
+      });
+    } catch (error) {
+      return response.status(error.status).json(error.status);
+    }
+  }
 }

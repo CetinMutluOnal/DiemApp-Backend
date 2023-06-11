@@ -3,10 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { FollowDto } from 'src/dto/follow-dto/follow-dto';
 import { IFollow } from 'src/interface/follow.interface';
+import { IUser } from 'src/interface/user.interface';
 
 @Injectable()
 export class FollowService {
-  constructor(@InjectModel('Follow') private followModel: Model<IFollow>) {}
+  constructor(
+    @InjectModel('Follow') private followModel: Model<IFollow>,
+    @InjectModel('User') private userModel: Model<IUser>,
+  ) {}
 
   async createFollow(followDto: FollowDto): Promise<IFollow> {
     const follow = new this.followModel(followDto);
@@ -112,5 +116,31 @@ export class FollowService {
       throw new NotFoundException('Follow Not Found');
     }
     return isFollowed;
+  }
+
+  async discoverUsers(userId: Types.ObjectId) {
+    const follows = await this.getAllFollows(userId);
+
+    const followedIds = follows.map((follow) => follow.followingId);
+
+    const recommendUsers = await this.userModel
+      .aggregate([
+        { $match: { _id: { $nin: followedIds, $ne: userId } } },
+        {
+          $project: {
+            __v: 0,
+            password: 0,
+            refreshToken: 0,
+          },
+        },
+        { $sample: { size: 10 } },
+      ])
+      .exec();
+
+    if (!recommendUsers) {
+      throw new NotFoundException('Not Found');
+    }
+
+    return recommendUsers;
   }
 }
