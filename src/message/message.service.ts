@@ -117,4 +117,30 @@ export class MessageService {
     }
     throw new UnauthorizedException('You Can Only Delete Your Own Message');
   }
+
+  async startConversation(userId: Types.ObjectId) {
+    const messagedUsers = await this.getUsers(userId);
+
+    const followedIds = messagedUsers.map((user) => user[0]._id);
+
+    const recommendUsers = await this.userModel
+      .aggregate([
+        { $match: { _id: { $nin: followedIds, $ne: userId } } },
+        {
+          $project: {
+            __v: 0,
+            password: 0,
+            refreshToken: 0,
+          },
+        },
+        { $sample: { size: 10 } },
+      ])
+      .exec();
+
+    if (!recommendUsers) {
+      throw new NotFoundException('Not Found');
+    }
+
+    return recommendUsers;
+  }
 }
