@@ -155,4 +155,20 @@ export class MessageController {
       });
     }
   }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('/new/conversation')
+  async discoverUsers(@Request() req, @Res() response) {
+    try {
+      const follows = await this.messageService.startConversation(
+        new Types.ObjectId(req.user.userId),
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Followings found successfully',
+        data: follows,
+      });
+    } catch (error) {
+      return response.status(error.status).json(error.status);
+    }
+  }
 }
