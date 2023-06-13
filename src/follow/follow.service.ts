@@ -119,28 +119,46 @@ export class FollowService {
   }
 
   async discoverUsers(userId: Types.ObjectId) {
-    const follows = await this.getAllFollows(userId);
+    try {
+      const follows = await this.getAllFollows(userId);
 
-    const followedIds = follows.map((follow) => follow.followingId);
+      const followedIds = follows.map((follow) => follow.followingId);
 
-    const recommendUsers = await this.userModel
-      .aggregate([
-        { $match: { _id: { $nin: followedIds, $ne: userId } } },
-        {
-          $project: {
-            __v: 0,
-            password: 0,
-            refreshToken: 0,
+      const recommendUsers = await this.userModel
+        .aggregate([
+          { $match: { _id: { $nin: followedIds, $ne: userId } } },
+          {
+            $project: {
+              __v: 0,
+              password: 0,
+              refreshToken: 0,
+            },
           },
-        },
-        { $sample: { size: 10 } },
-      ])
-      .exec();
+          { $sample: { size: 10 } },
+        ])
+        .exec();
 
-    if (!recommendUsers) {
-      throw new NotFoundException('Not Found');
+      if (!recommendUsers) {
+        throw new NotFoundException('Not Found');
+      }
+
+      return recommendUsers;
+    } catch (error) {
+      const recommendUsers = await this.userModel
+        .aggregate([
+          { $match: { _id: { $ne: userId } } },
+          {
+            $project: {
+              __v: 0,
+              password: 0,
+              refreshToken: 0,
+            },
+          },
+          { $sample: { size: 10 } },
+        ])
+        .exec();
+
+      return recommendUsers;
     }
-
-    return recommendUsers;
   }
 }

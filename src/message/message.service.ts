@@ -36,42 +36,46 @@ export class MessageService {
   }
 
   async getUsers(userId: Types.ObjectId): Promise<any[]> {
-    const messages = await this.getAllMessagedUsers(userId);
+    try {
+      const messages = await this.getAllMessagedUsers(userId);
 
-    const userList: Array<string> = [];
+      const userList: Array<string> = [];
 
-    messages.forEach((message) => {
-      if (message.receiverId.toString() == userId.toString()) {
-        userList.push(message.senderId.toString());
-      } else {
-        userList.push(message.receiverId.toString());
+      messages.forEach((message) => {
+        if (message.receiverId.toString() == userId.toString()) {
+          userList.push(message.senderId.toString());
+        } else {
+          userList.push(message.receiverId.toString());
+        }
+      });
+
+      const mySet = new Set(Array.from(userList));
+
+      const users = Array.from(mySet);
+      const message: Array<any> = [];
+      for (const id of users) {
+        message.push(
+          await this.userModel.aggregate([
+            {
+              $match: {
+                _id: new Types.ObjectId(id),
+              },
+            },
+            {
+              $project: {
+                __v: 0,
+                refreshToken: 0,
+                password: 0,
+              },
+            },
+          ]),
+        );
       }
-    });
 
-    const mySet = new Set(Array.from(userList));
-
-    const users = Array.from(mySet);
-    const message: Array<any> = [];
-    for (const id of users) {
-      message.push(
-        await this.userModel.aggregate([
-          {
-            $match: {
-              _id: new Types.ObjectId(id),
-            },
-          },
-          {
-            $project: {
-              __v: 0,
-              refreshToken: 0,
-              password: 0,
-            },
-          },
-        ]),
-      );
+      return message;
+    } catch (error) {
+      throw new NotFoundException('Not Found');
     }
-
-    return message;
   }
 
   async getAllMessages(findMessageDto: FindMessageDto): Promise<IMessage[]> {
@@ -119,28 +123,46 @@ export class MessageService {
   }
 
   async startConversation(userId: Types.ObjectId) {
-    const messagedUsers = await this.getUsers(userId);
+    try {
+      const messagedUsers = await this.getUsers(userId);
 
-    const followedIds = messagedUsers.map((user) => user[0]._id);
+      const followedIds = messagedUsers.map((user) => user[0]._id);
 
-    const recommendUsers = await this.userModel
-      .aggregate([
-        { $match: { _id: { $nin: followedIds, $ne: userId } } },
-        {
-          $project: {
-            __v: 0,
-            password: 0,
-            refreshToken: 0,
+      const recommendUsers = await this.userModel
+        .aggregate([
+          { $match: { _id: { $nin: followedIds, $ne: userId } } },
+          {
+            $project: {
+              __v: 0,
+              password: 0,
+              refreshToken: 0,
+            },
           },
-        },
-        { $sample: { size: 10 } },
-      ])
-      .exec();
+          { $sample: { size: 10 } },
+        ])
+        .exec();
 
-    if (!recommendUsers) {
-      throw new NotFoundException('Not Found');
+      if (!recommendUsers) {
+        throw new NotFoundException('Not Found');
+      }
+
+      return recommendUsers;
+    } catch (error) {
+      const recommendUsers = await this.userModel
+        .aggregate([
+          { $match: { _id: { $ne: userId } } },
+          {
+            $project: {
+              __v: 0,
+              password: 0,
+              refreshToken: 0,
+            },
+          },
+          { $sample: { size: 10 } },
+        ])
+        .exec();
+
+      return recommendUsers;
     }
-
-    return recommendUsers;
   }
 }
